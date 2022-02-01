@@ -16,7 +16,7 @@
         var channel_type = bytes[i++];
         // BATTERY
         if (channel_id === 0x01 && channel_type === 0x75) {
-            decoded.battery = bytes[i];
+            decoded.battery_13_98 = bytes[i];
             i += 1;
         }
         // TEMPERATURE
@@ -26,7 +26,7 @@
             i += 2;
 
             // ℉
-            // decoded.temperature = readInt16LE(bytes.slice(i, i + 2)) / 10 * 1.8 + 32;
+            // decoded.temperature_1_64 = readInt16LE(bytes.slice(i, i + 2)) / 10 * 1.8 + 32;
             // i +=2;
         }
         // HUMIDITY
