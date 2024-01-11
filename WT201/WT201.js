@@ -33,12 +33,12 @@
               }
               // TEMPERATURE
               else if (channel_id === 0x03 && channel_type === 0x67) {
-                  decoded.temperature = readInt16LE(bytes.slice(i, i + 2)) / 10;
+                  decoded.temperature = (readInt16LE(bytes.slice(i, i + 2)) / 10) * 1.8 + 32;
                   i += 2;
               }
               // TEMPERATURE TARGET
               else if (channel_id === 0x04 && channel_type === 0x67) {
-                  decoded.temperature_target = readInt16LE(bytes.slice(i, i + 2)) / 10;
+                  decoded.temperature_target = (readInt16LE(bytes.slice(i, i + 2)) / 10) * 1.8 + 32;
                   i += 2;
               }
               // TEMPERATURE CONTROL
