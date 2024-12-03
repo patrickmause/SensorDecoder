@@ -53,12 +53,7 @@ function Decoder(bytes, port) {
                     break;
                 case 2:
                 case 3:
-                    if(modbus_chn_id === 2 || modbus_chn_id === 29) {
-                        value = readInt16LE(bytes.slice(i, i + 2));
-                    }
-                    else {
-                        value = (sign ? readInt16LE(bytes.slice(i, i + 2)) : readUInt16LE(bytes.slice(i, i + 2)));
-                    }
+                    value = (sign ? readInt16LE(bytes.slice(i, i + 2)) : readUInt16LE(bytes.slice(i, i + 2)));
                     i += 2;
                     break;
                 case 4:
@@ -79,128 +74,142 @@ function Decoder(bytes, port) {
             
             switch(modbus_chn_id)  {
                 case 1:
-                    modbus_chn_name = "Setpoint";
+                    modbus_chn_name = "Temperature";
                     value = value / 10;
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 2:
-                    modbus_chn_name = "Temperature_Offset";
-                    value = value / 10;
+                    modbus_chn_name = "Fan_Status";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 3:
-                    modbus_chn_name = "Fan_Stage_Config";
-                    decoded[modbus_chn_name] = value;
+                    var cltsa = value  & 0x01;
+                    var etsha = (value >>> 1) & 0x01;
+                    var etsla = (value >>> 2) & 0x01;
+                    var cosma = (value >>> 3) & 0x01;
+                    
+                    decoded["CLTS_Alarm"] = cltsa;
+                    decoded["ETSH_Alarm"] = etsha;
+                    decoded["ETSL_Alarm"] = etsla;
+                    decoded["COSM_Alarm"] = cosma;
+
                     break;
                 case 4:
-                    modbus_chn_name = "Mode";
+                    modbus_chn_name = "Temperature_Offset";
+                    value = value / 10;
+                    value = toFahrenheitDelta(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 5:
-                    modbus_chn_name = "Display_Content";
+                    modbus_chn_name = "Password";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 6:
-                    modbus_chn_name = "Occupancy";
-                    decoded[modbus_chn_name] = value;
+                    var onoff = value & 0x01;
+                    var mode  = (value >>> 1) & 0x01;
+                    var fan   = (value >>> 3) & 0x01;
+                    var sp    = (value >>> 4) & 0x01;
+                    var all   = (value >>> 2) & 0x01;
+                    
+                    decoded["Lock_On_Off"] = onoff;
+                    decoded["Lock_Mode"] = mode;
+                    decoded["Lock_Fan"] = fan;
+                    decoded["Lock_Setpoint"] = sp;
+                    decoded["Lock_ALL"] = all;
                     break;
                 case 7:
-                    modbus_chn_name = "Temperature";
-                    value = value / 10;
-                    decoded[modbus_chn_name] = value;
+                    var sp    = value & 0x01;
+                    var temp  = (value >>> 1) & 0x01;
+                    var valve = (value >>> 2) & 0x01;
+                    var pi    = (value >>> 3) & 0x01;
+                    
+                    decoded["Show_Setpoint"] = sp;
+                    decoded["Show_Temperature"] = temp;
+                    decoded["Show_Valve"] = valve;
+                    decoded["Show_PI"] = pi;
                     break;
                 case 8:
-                    modbus_chn_name = "Humidity";
+                    modbus_chn_name = "Setpoint_Limit_Low";
                     value = value / 10;
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 9:
-                    modbus_chn_name = "Output_Heat";
+                    modbus_chn_name = "Setpoint_Limit_High";
+                    value = value / 10;
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 10:
-                    modbus_chn_name = "Output_Cool";
+                    modbus_chn_name = "Setpoint_Increment";
+                    value = value / 10;
+                    value = toFahrenheitDelta(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 11:
-                    modbus_chn_name = "OB";
+                    modbus_chn_name = "ECO_Setpoint_Cooling";
+                    value = value / 10;
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 12:
-                    modbus_chn_name = "Compressor";
+                    modbus_chn_name = "ECO_Setpoint_Heating";
+                    value = value / 10;
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 13:
-                    modbus_chn_name = "Aux_Heat";
+                    modbus_chn_name = "Controller_Mode";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 14:
-                    modbus_chn_name = "Heat_Runtime";
+                    modbus_chn_name = "Fan_Off_Delay";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 15:
-                    modbus_chn_name = "Cool_Runtime";
+                    modbus_chn_name = "Deadband";
+                    value = value / 10;
+                    value = toFahrenheitDelta(value);
                     decoded[modbus_chn_name] = value;
                     break;
                 case 16:
-                    modbus_chn_name = "Fan_Runtime";
+                    modbus_chn_name = "Relative_Humidity";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 17:
-                    modbus_chn_name = "Cycle_Count_Heat";
+                    modbus_chn_name = "Ambient_Pressure_For_CO2";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 18:
-                    modbus_chn_name = "Cycle_Count_Cool";
+                    modbus_chn_name = "CO2";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 19:
-                    modbus_chn_name = "Cycle_Count_Fan";
+                    modbus_chn_name = "CO2_Offset";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 20:
-                    modbus_chn_name = "Cycle_Count_Setback";
+                    modbus_chn_name = "TFL_Threshold_Yellow";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 21:
-                    modbus_chn_name = "Configuration_In_Use";
+                    modbus_chn_name = "TFL_Threshold_Red";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 22:
-                    modbus_chn_name = "MIN_COOL_SETPOINT";
+                    modbus_chn_name = "Active_Fan_Speed";
                     decoded[modbus_chn_name] = value;
                     break;
                 case 23:
-                    modbus_chn_name = "MAX_HEAT_SETPOINT";
-                    decoded[modbus_chn_name] = value;
-                    break;
-                case 24:
-                    modbus_chn_name = "Cycles_Per_Hour";
-                    decoded[modbus_chn_name] = value;
-                    break;
-                case 25:
-                    modbus_chn_name = "Runtime_For_Filter_Notification";
-                    decoded[modbus_chn_name] = value;
-                    break;
-                case 26:
-                    modbus_chn_name = "Deadband";
+                    modbus_chn_name = "Setpoint";
                     value = value / 10;
-                    decoded[modbus_chn_name] = value;
-                    break;
-                 case 27:
-                    modbus_chn_name = "Hysteresis";
-                    value = value / 10;
-                    decoded[modbus_chn_name] = value;
-                    break;
-                case 28:
-                    modbus_chn_name = "Fan_Purge_Timer";
-                    decoded[modbus_chn_name] = value;
-                    break;
-                case 29:
-                    modbus_chn_name = "Fan_Stages";
+                    value = toFahrenheit(value);
                     decoded[modbus_chn_name] = value;
                     break;
             }
+
+
         }
         // MODBUS READ ERROR
         else if (channel_id === 0xff && channel_type === 0x15) {
@@ -212,8 +221,32 @@ function Decoder(bytes, port) {
             break;
         }
     }
+// Test for LoRa properties in normalizedPayload
+//   try {
+//     decoded.lora_rssi =
+//       (!!normalizedPayload.gateways &&
+//         Array.isArray(normalizedPayload.gateways) &&
+//         normalizedPayload.gateways[0].rssi) ||
+//       0;
+//     decoded.lora_snr =
+//       (!!normalizedPayload.gateways &&
+//         Array.isArray(normalizedPayload.gateways) &&
+//         normalizedPayload.gateways[0].snr) ||
+//       0;
+//     decoded.lora_datarate = normalizedPayload.data_rate || 'not retrievable';
+//   } catch (error) {
+//     console.log('Error occurred while decoding LoRa properties: ' + error);
+//   }
 
     return decoded;
+}
+
+function toFahrenheit(celsius) {
+    return (celsius * 1.8) + 32;
+}
+
+function toFahrenheitDelta(celsius) {
+    return celsius * (9/5);
 }
 
 /* ******************************************
